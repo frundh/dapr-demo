@@ -1,0 +1,38 @@
+services:
+  ############################
+  # Dotnet app + Dapr sidecar
+  ############################
+  dotnetapp:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        - APP_NAME=StateManagement
+    depends_on:
+      dotnetapp-dapr:
+        condition: service_started
+    network_mode: "service:dotnetapp-dapr"
+    command: ["0"]
+  dotnetapp-dapr:
+    image: "daprio/daprd:edge"
+    command: ["./daprd",
+      "-app-id", "dotnetapp",
+      "-components-path", "/components"]
+    volumes:
+      - "./components/:/components"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  ############################
+  # Redis state store
+  ############################
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 30
