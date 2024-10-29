@@ -2,22 +2,51 @@ services:
   ############################
   # Dotnet app + Dapr sidecar
   ############################
+  #dotnetapp:
+  #  build:
+  #    context: .
+  #    dockerfile: ./Dockerfile
+  #    args:
+  #      - APP_NAME=StateManagement
+  #  depends_on:
+  #    dotnetapp-dapr:
+  #      condition: service_started
+  #  network_mode: "service:dotnetapp-dapr"
+  #  command: ["0"]
+  #dotnetapp-dapr:
+  #  image: "daprio/daprd:edge"
+  #  command: ["./daprd",
+  #    "-app-id", "dotnetapp",
+  #    "-components-path", "/components"]
+  #  volumes:
+  #    - "./components/:/components"
+  #  depends_on:
+  #    redis:
+  #      condition: service_healthy
+
+  ############################
+  # Dotnet app + Dapr sidecar
+  ############################
   dotnetapp:
     build:
       context: .
       dockerfile: ./Dockerfile
       args:
-        - APP_NAME=StateManagement
+        - APP_NAME=StateManagement.Api
+    environment:
+      LOGGING__LOGLEVEL__DEFAULT: Warning
+    ports:
+      - "8080:8080"
     depends_on:
-      dotnetapp-dapr:
-        condition: service_started
-    network_mode: "service:dotnetapp-dapr"
-    command: ["0"]
+      redis:
+        condition: service_healthy
+
   dotnetapp-dapr:
     image: "daprio/daprd:edge"
     command: ["./daprd",
       "-app-id", "dotnetapp",
       "-components-path", "/components"]
+    network_mode: "service:dotnetapp"
     volumes:
       - "./components/:/components"
     depends_on:
@@ -37,6 +66,9 @@ services:
       timeout: 3s
       retries: 30
 
+  ############################
+  # Locust load testing
+  ############################
   locust:
     image: locustio/locust
     ports:
@@ -49,3 +81,6 @@ services:
       #LOCUST_WEB_PORT: 8089
       LOCUST_USERS: 10
       LOCUST_AUTOSTART: true
+    depends_on:
+      dotnetapp:
+        condition: service_started

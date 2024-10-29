@@ -3,11 +3,10 @@ from locust.user.wait_time import constant
 
 class WebsiteUser(FastHttpUser):
     """
-    User class that does requests to the locust web server running on localhost,
-    using the fast HTTP client
+    A user class that hits the dotnetapp service
     """
 
-    host = "http://127.0.0.1:8089"
+    host = "http://dotnetapp-dapr:8080"
     # some things you can configure on FastHttpUser
     # connection_timeout = 60.0
     # insecure = True
@@ -17,11 +16,11 @@ class WebsiteUser(FastHttpUser):
     # proxy_host = my-proxy.com
     # proxy_port = 8080
     
-    wait_time = constant(30) # 30 seconds between each task
+    # wait_time = constant(30) # 30 seconds between each task
 
     @task
     def index(self):
-        self.client.get("/")
+        self.client.post("/State?updates=10&delete=true&delay=50")
 
     #@task
     #def stats(self):
