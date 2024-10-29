@@ -36,3 +36,16 @@ services:
       interval: 10s
       timeout: 3s
       retries: 30
+
+  locust:
+    image: locustio/locust
+    ports:
+     - "8089:8089"
+    volumes:
+      - ./locust:/mnt/locust
+    command: -f /mnt/locust/locustfile.py
+    environment:
+      # https://docs.locust.io/en/stable/configuration.html
+      #LOCUST_WEB_PORT: 8089
+      LOCUST_USERS: 10
+      LOCUST_AUTOSTART: true
