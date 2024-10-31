@@ -17,6 +17,33 @@ class Program
       var cts = new CancellationTokenSource();
       Console.CancelKeyPress += (object? sender, ConsoleCancelEventArgs e) => cts.Cancel();
 
+      using (var httpClient = new HttpClient())
+      {
+        var daprSidecarUrl = "http://localhost:3500/v1.0/healthz";
+        var isHealthy = false;
+        while (!isHealthy)
+        {
+          try
+          {
+            var response = await httpClient.GetAsync(daprSidecarUrl, cts.Token);
+            if (response.IsSuccessStatusCode)
+            {
+              isHealthy = true;
+            }
+            else
+            {
+              Console.WriteLine("Waiting for Dapr sidecar to be healthy...");
+              await Task.Delay(1000, cts.Token);
+            }
+          }
+          catch (HttpRequestException)
+          {
+            Console.WriteLine("Waiting for Dapr sidecar to be healthy...");
+            await Task.Delay(1000, cts.Token);
+          }
+        }
+      }
+
       await Examples[index].RunAsync(cts.Token);
       return 0;
     }
