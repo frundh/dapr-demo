@@ -6,7 +6,7 @@ class WebsiteUser(FastHttpUser):
     A user class that hits the dotnetapp service
     """
 
-    host = "http://dotnetapp-dapr:8080"
+    host = "http://dotnetapp:8080"
     # some things you can configure on FastHttpUser
     # connection_timeout = 60.0
     # insecure = True
