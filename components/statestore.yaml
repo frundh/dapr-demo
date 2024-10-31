@@ -1,12 +1,35 @@
+#apiVersion: dapr.io/v1alpha1
+#kind: Component
+#metadata:
+#  name: statestore
+#spec:
+#  type: state.redis
+#  version: v1
+#  metadata:
+#  - name: redisHost
+#    value: redis:6379
+#  - name: redisPassword
+#    value: ""
+---
 apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
   name: statestore
 spec:
-  type: state.redis
+  type: state.azure.cosmosdb
   version: v1
+  initTimeout: 5m
   metadata:
-  - name: redisHost
-    value: redis:6379
-  - name: redisPassword
-    value: ""
+  - name: url
+    value: "https://cosmosdb:8081"
+  - name: masterKey
+    value: "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
+  - name: database
+    value: "mydatabase"
+  - name: collection
+    value: "mycontainer"
+  - name: keyPrefix
+    # https://docs.dapr.io/developing-applications/building-blocks/state-management/howto-share-state/
+    value: none # default is 'appid'
+  - name: insecureSkipTlsVerify
+    value: "true"

@@ -39,11 +39,11 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      redis:
+      cosmosdb:
         condition: service_healthy
 
   dotnetapp-dapr:
-    image: "daprio/daprd:edge"
+    image: "frundh/daprd:latest-linux-amd64"
     command: ["./daprd",
       "-app-id", "dotnetapp",
       "-components-path", "/components"]
@@ -51,21 +51,34 @@ services:
     volumes:
       - "./components/:/components"
     depends_on:
-      redis:
+      cosmosdb:
         condition: service_healthy
 
   ############################
   # Redis state store
   ############################
-  redis:
-    image: "redis:alpine"
+  #redis:
+  #  image: "redis:alpine"
+  #  ports:
+  #    - "6380:6379"
+  #  healthcheck:
+  #    test: ["CMD", "redis-cli", "ping"]
+  #    interval: 10s
+  #    timeout: 3s
+  #    retries: 30
+
+  ############################
+  # CosmosDB emulator
+  ############################
+  cosmosdb:
+    #image: "mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator"
+    build:
+      context: ./cosmosdb
+      dockerfile: Dockerfile
     ports:
-      - "6380:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 30
+      - "8081:8081" # Data explorer web UI (https://localhost:8081/_explorer/index.html)
+    environment:
+      - AZURE_COSMOS_EMULATOR_PARTITION_COUNT=1
 
   ############################
   # Locust load testing
@@ -81,7 +94,7 @@ services:
       # https://docs.locust.io/en/stable/configuration.html
       #LOCUST_WEB_PORT: 8089
       LOCUST_USERS: 10
-      LOCUST_AUTOSTART: true
+      LOCUST_AUTOSTART: false
     depends_on:
       dotnetapp:
         condition: service_started
