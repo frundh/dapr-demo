@@ -11,12 +11,13 @@ public class StateController : ControllerBase
     private readonly ILogger<StateController> _logger;
     private readonly DaprClient _daprClient;
 
-    private readonly string _storeName = "statestore";
+    private string _storeName = "statestore";
 
-    public StateController(ILogger<StateController> logger, DaprClient daprClient)
+    public StateController(ILogger<StateController> logger, IConfiguration configuration, DaprClient daprClient)
     {
         _logger = logger;
         _daprClient = daprClient;
+        _storeName = configuration["StateStoreName"] ?? _storeName;
     }
 
     [HttpPost]
